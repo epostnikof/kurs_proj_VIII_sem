@@ -1,0 +1,285 @@
+<html>
+<head>
+<title>1.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+1.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">tkinter </span><span class="s0">as </span><span class="s1">tk</span>
+<span class="s0">from </span><span class="s1">tkinter </span><span class="s0">import </span><span class="s1">ttk</span>
+<span class="s0">import </span><span class="s1">sqlite3</span>
+
+
+<span class="s2">##Класс главного окна</span>
+<span class="s0">class </span><span class="s1">Main(tk.Frame):</span>
+    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">root):</span>
+        <span class="s1">super().__init__(root)</span>
+        <span class="s1">self.init_main()</span>
+        <span class="s1">self.db = db</span>
+        <span class="s2"># Для отображения данных:</span>
+        <span class="s1">self.view_records()</span>
+
+    <span class="s0">def </span><span class="s1">init_main(self):</span>
+        <span class="s1">toolbar = tk.Frame(bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">2</span><span class="s1">)</span>
+        <span class="s1">toolbar.pack(side=tk.TOP</span><span class="s0">, </span><span class="s1">fill=tk.X)</span>
+
+        <span class="s1">self.add_img = tk.PhotoImage(file=</span><span class="s3">&quot;add.gif&quot;</span><span class="s1">)</span>
+        <span class="s1">btn_open_dialog = tk.Button(toolbar</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Добавить перевозчика'</span><span class="s0">, </span><span class="s1">command=self.open_dialog</span><span class="s0">, </span><span class="s1">bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">0</span><span class="s0">,</span>
+                                    <span class="s1">compound=tk.TOP</span><span class="s0">, </span><span class="s1">image=self.add_img)</span>
+        <span class="s1">btn_open_dialog.pack(side=tk.LEFT)</span>
+
+        <span class="s1">self.update_img = tk.PhotoImage(file=</span><span class="s3">'update.gif'</span><span class="s1">)</span>
+        <span class="s1">btn_edit_dialog = tk.Button(toolbar</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Редактировать выделенную запись&quot;</span><span class="s0">, </span><span class="s1">bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">0</span><span class="s0">,</span>
+                                    <span class="s1">image=self.update_img</span><span class="s0">,</span>
+                                    <span class="s1">compound=tk.TOP</span><span class="s0">, </span><span class="s1">command=self.open_update_dialog)</span>
+        <span class="s1">btn_edit_dialog.pack(side=tk.LEFT)</span>
+
+        <span class="s1">self.delete_img = tk.PhotoImage(file=</span><span class="s3">'delete.gif'</span><span class="s1">)</span>
+        <span class="s1">btn_delete = tk.Button(toolbar</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Удалить выделенные записи'</span><span class="s0">, </span><span class="s1">bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">0</span><span class="s0">, </span><span class="s1">image=self.delete_img</span><span class="s0">,</span>
+                               <span class="s1">compound=tk.TOP</span><span class="s0">, </span><span class="s1">command=self.delete_records)</span>
+        <span class="s1">btn_delete.pack(side=tk.LEFT)</span>
+
+        <span class="s1">self.search_img = tk.PhotoImage(file=</span><span class="s3">'search.gif'</span><span class="s1">)</span>
+        <span class="s1">btn_search = tk.Button(toolbar</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Поиск по ФИО'</span><span class="s0">, </span><span class="s1">bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">0</span><span class="s0">, </span><span class="s1">image=self.search_img</span><span class="s0">,</span>
+                               <span class="s1">compound=tk.TOP</span><span class="s0">, </span><span class="s1">command=self.open_search_dialog)</span>
+        <span class="s1">btn_search.pack(side=tk.LEFT)</span>
+
+        <span class="s1">self.refresh_img = tk.PhotoImage(file=</span><span class="s3">'refresh.gif'</span><span class="s1">)</span>
+        <span class="s1">btn_refresh = tk.Button(toolbar</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Обновить'</span><span class="s0">, </span><span class="s1">bg=</span><span class="s3">'#d7d8e0'</span><span class="s0">, </span><span class="s1">bd=</span><span class="s4">0</span><span class="s0">, </span><span class="s1">image=self.refresh_img</span><span class="s0">,</span>
+                               <span class="s1">compound=tk.TOP</span><span class="s0">, </span><span class="s1">command=self.view_records)</span>
+        <span class="s1">btn_refresh.pack(side=tk.LEFT)</span>
+
+        <span class="s1">self.tree = ttk.Treeview(self</span><span class="s0">, </span><span class="s1">columns=(</span><span class="s3">'ID_Driver'</span><span class="s0">, </span><span class="s3">'DriverName'</span><span class="s0">, </span><span class="s3">'FIO_Driver'</span><span class="s0">, </span><span class="s3">'PassportData'</span><span class="s0">,</span>
+                                                <span class="s3">'Car'</span><span class="s0">, </span><span class="s3">'Trailer'</span><span class="s0">, </span><span class="s3">'Driver_Phone'</span><span class="s0">, </span><span class="s3">'Available'</span><span class="s1">)</span><span class="s0">,</span>
+                                 <span class="s1">height=</span><span class="s4">15</span><span class="s0">, </span><span class="s1">show=</span><span class="s3">'headings'</span><span class="s1">)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;ID_Driver&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">30</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;DriverName&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">365</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;FIO_Driver&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">365</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;PassportData&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">365</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;Car&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">150</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;Trailer&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">150</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;Driver_Phone&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">100</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+        <span class="s1">self.tree.column(</span><span class="s3">&quot;Available&quot;</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">100</span><span class="s0">, </span><span class="s1">anchor=tk.CENTER)</span>
+
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;ID_Driver&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'ID'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;DriverName&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Название перевозчика'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;FIO_Driver&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'ФИО водителя'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;PassportData&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Паспортные данные'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;Car&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Марка и номер тягача'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;Trailer&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Номер полуприцепа'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;Driver_Phone&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Номер телефона'</span><span class="s1">)</span>
+        <span class="s1">self.tree.heading(</span><span class="s3">&quot;Available&quot;</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Доступность'</span><span class="s1">)</span>
+
+        <span class="s1">self.tree.pack()</span>
+
+    <span class="s2"># Функция записи данных</span>
+    <span class="s0">def </span><span class="s1">records(self</span><span class="s0">, </span><span class="s1">drivername</span><span class="s0">, </span><span class="s1">fio</span><span class="s0">, </span><span class="s1">passdata</span><span class="s0">, </span><span class="s1">car</span><span class="s0">, </span><span class="s1">trailer</span><span class="s0">, </span><span class="s1">driver_phone</span><span class="s0">, </span><span class="s1">available):</span>
+        <span class="s1">self.db.insert_data(drivername</span><span class="s0">, </span><span class="s1">fio</span><span class="s0">, </span><span class="s1">passdata</span><span class="s0">, </span><span class="s1">car</span><span class="s0">, </span><span class="s1">trailer</span><span class="s0">, </span><span class="s1">driver_phone</span><span class="s0">, </span><span class="s1">available)</span>
+        <span class="s2"># Для отображения данных:</span>
+        <span class="s1">self.view_records()</span>
+
+    <span class="s0">def </span><span class="s1">update_record(self</span><span class="s0">, </span><span class="s1">DriverName</span><span class="s0">, </span><span class="s1">FIO_Driver</span><span class="s0">, </span><span class="s1">PassportData</span><span class="s0">, </span><span class="s1">Car</span><span class="s0">, </span><span class="s1">Trailer</span><span class="s0">, </span><span class="s1">Driver_Phone</span><span class="s0">, </span><span class="s1">Available):</span>
+        <span class="s1">self.db.c.execute(</span><span class="s3">'UPDATE carriers SET DriverName=?, FIO_Driver=?, PassportData=?, Car=?, Trailer=?, '</span>
+                          <span class="s3">'Driver_Phone=?, Available=? WHERE ID=?'</span><span class="s0">,</span>
+                          <span class="s1">[DriverName</span><span class="s0">, </span><span class="s1">FIO_Driver</span><span class="s0">, </span><span class="s1">PassportData</span><span class="s0">, </span><span class="s1">Car</span><span class="s0">, </span><span class="s1">Trailer</span><span class="s0">, </span><span class="s1">Driver_Phone</span><span class="s0">, </span><span class="s1">Available</span><span class="s0">,</span>
+                           <span class="s1">self.tree.set(self.tree.selection()[</span><span class="s4">0</span><span class="s1">]</span><span class="s0">, </span><span class="s3">'#1'</span><span class="s1">)])</span>
+
+        <span class="s1">self.db.conn.commit()  </span><span class="s2"># сохранить изменения</span>
+        <span class="s1">self.view_records()  </span><span class="s2"># отобразить изменения</span>
+
+    <span class="s0">def </span><span class="s1">view_records(self):</span>
+        <span class="s1">self.db.c.execute(</span><span class="s3">'''SELECT * FROM carriers'''</span><span class="s1">)  </span><span class="s2"># Отображение в тревью</span>
+        <span class="s1">[self.tree.delete(i) </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">self.tree.get_children()]  </span><span class="s2"># Обновление данных</span>
+        <span class="s1">[self.tree.insert(</span><span class="s3">''</span><span class="s0">, </span><span class="s3">'end'</span><span class="s0">, </span><span class="s1">values=row) </span><span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">self.db.c.fetchall()]</span>
+
+    <span class="s0">def </span><span class="s1">delete_records(self):</span>
+        <span class="s0">for </span><span class="s1">selection_item </span><span class="s0">in </span><span class="s1">self.tree.selection():  </span><span class="s2"># Нужен цикл для удаления нескольких полей</span>
+            <span class="s1">self.db.c.execute(</span><span class="s3">'''DELETE FROM carriers WHERE id=?'''</span><span class="s0">, </span><span class="s1">(self.tree.set(selection_item</span><span class="s0">, </span><span class="s3">'#1'</span><span class="s1">)</span><span class="s0">,</span><span class="s1">))</span>
+
+        <span class="s1">self.db.conn.commit()</span>
+        <span class="s1">self.view_records()</span>
+
+    <span class="s0">def </span><span class="s1">search_records(self</span><span class="s0">, </span><span class="s1">FIO_Driver):</span>
+        <span class="s1">FIO_Driver = (</span><span class="s3">'%' </span><span class="s1">+ FIO_Driver + </span><span class="s3">'%'</span><span class="s0">,</span><span class="s1">)</span>
+        <span class="s1">self.db.c.execute(</span><span class="s3">'''SELECT * FROM carriers WHERE FIO_Driver LIKE ?'''</span><span class="s0">,</span>
+                          <span class="s1">FIO_Driver)  </span><span class="s2"># Обращаемся к базе данных и формируем SQL запрос</span>
+        <span class="s2">##Отображаем строки в виджете Treeview</span>
+        <span class="s2">#1. Очистим содержимое виджета путём использования генератора списка</span>
+        <span class="s2">#2. В цикле будем получать строки из метода treeview c помощью метода get.children</span>
+        <span class="s2">#3. После удалять, применяя метод Delete</span>
+        <span class="s1">[self.tree.delete(i) </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">self.tree.get_children()]</span>
+        <span class="s2">#Отображаем результаты поиска:</span>
+        <span class="s1">[self.tree.insert(</span><span class="s3">''</span><span class="s0">, </span><span class="s3">'end'</span><span class="s0">, </span><span class="s1">values=row) </span><span class="s0">for </span><span class="s1">row </span><span class="s0">in </span><span class="s1">self.db.c.fetchall()]</span>
+
+    <span class="s0">def </span><span class="s1">open_dialog(self):</span>
+        <span class="s1">Child()</span>
+
+    <span class="s0">def </span><span class="s1">open_update_dialog(self):</span>
+        <span class="s1">Update()</span>
+
+    <span class="s0">def </span><span class="s1">open_search_dialog(self):</span>
+        <span class="s1">Search()</span>
+
+
+<span class="s0">class </span><span class="s1">Child(tk.Toplevel):</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">super().__init__(root)</span>
+        <span class="s1">self.init_child()</span>
+        <span class="s1">self.view = app</span>
+
+    <span class="s0">def </span><span class="s1">init_child(self):</span>
+        <span class="s1">self.title(</span><span class="s3">'Добавить перевозчика'</span><span class="s1">)</span>
+        <span class="s1">self.geometry(</span><span class="s3">'500x400+400+300'</span><span class="s1">)</span>
+        <span class="s1">self.resizable(</span><span class="s0">False, False</span><span class="s1">)</span>
+
+        <span class="s2"># Виджет ввода данных:</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Наименование перевозчика&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">50</span><span class="s1">)</span>
+        <span class="s1">self.entry_drivername = ttk.Entry(self)</span>
+        <span class="s1">self.entry_drivername.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">50</span><span class="s1">)  </span><span class="s2"># Наименование перевозчика</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;ФИО водителя&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">90</span><span class="s1">)</span>
+        <span class="s1">self.entry_fio = ttk.Entry(self)</span>
+        <span class="s1">self.entry_fio.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">90</span><span class="s1">)  </span><span class="s2"># ФИО Водителя</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Паспортные данные&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">130</span><span class="s1">)</span>
+        <span class="s1">self.entry_passdata = ttk.Entry(self)</span>
+        <span class="s1">self.entry_passdata.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">130</span><span class="s1">)  </span><span class="s2"># Паспортные данные</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Номер и марка тягача&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">170</span><span class="s1">)</span>
+        <span class="s1">self.entry_car = ttk.Entry(self)</span>
+        <span class="s1">self.entry_car.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">170</span><span class="s1">)  </span><span class="s2"># Марка и номер тягача</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Номер прицепа&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">210</span><span class="s1">)</span>
+        <span class="s1">self.entry_trailer = ttk.Entry(self)</span>
+        <span class="s1">self.entry_trailer.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">210</span><span class="s1">)  </span><span class="s2"># Номер прицепа</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">&quot;Номер телефона&quot;</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">250</span><span class="s1">)</span>
+        <span class="s1">self.entry_driver_phone = ttk.Entry(self)</span>
+        <span class="s1">self.entry_driver_phone.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">250</span><span class="s1">)</span>
+
+        <span class="s1">label_drivername = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Доступность'</span><span class="s1">)</span>
+        <span class="s1">label_drivername.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">290</span><span class="s1">)</span>
+        <span class="s1">self.combobox = ttk.Combobox(self</span><span class="s0">, </span><span class="s1">values=[</span><span class="s3">u'Доступен'</span><span class="s0">, </span><span class="s3">u'Не доступен'</span><span class="s1">])</span>
+        <span class="s1">self.combobox.current(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.combobox.place(x=</span><span class="s4">250</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">290</span><span class="s1">)  </span><span class="s2"># Доступность экипажа</span>
+
+        <span class="s2"># Кнопка закрытия окна:</span>
+        <span class="s1">btn_cancel = ttk.Button(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Закрыть'</span><span class="s0">, </span><span class="s1">command=self.destroy)</span>
+        <span class="s1">btn_cancel.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">350</span><span class="s1">)</span>
+
+        <span class="s2"># Кнопка &quot;Добавить&quot;</span>
+        <span class="s1">self.btn_ok = ttk.Button(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Добавить'</span><span class="s1">)</span>
+        <span class="s1">self.btn_ok.place(x=</span><span class="s4">300</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">350</span><span class="s1">)</span>
+        <span class="s1">self.btn_ok.bind(</span><span class="s3">'&lt;Button-1&gt;'</span><span class="s0">, lambda </span><span class="s1">event: self.view.records(self.entry_drivername.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.entry_fio.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.entry_passdata.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.entry_car.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.entry_trailer.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.entry_driver_phone.get()</span><span class="s0">,</span>
+                                                                       <span class="s1">self.combobox.get()))</span>
+
+        <span class="s2">##END##</span>
+
+        <span class="s1">self.grab_set()</span>
+        <span class="s1">self.focus_set()</span>
+
+        <span class="s2"># Создадим класс update, который будет наследоваться от класса child</span>
+
+
+<span class="s0">class </span><span class="s1">Update(Child):</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">super().__init__()</span>
+        <span class="s1">self.init_edit()  </span><span class="s2"># Для отображения пользователю изменений. Вызываем функцию из конструктора класса update.</span>
+        <span class="s1">self.view = app</span>
+
+    <span class="s0">def </span><span class="s1">init_edit(self):</span>
+        <span class="s1">self.title(</span><span class="s3">'Редактировать запись'</span><span class="s1">)</span>
+        <span class="s1">btn_edit = ttk.Button(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Редактировать'</span><span class="s1">)</span>
+        <span class="s1">btn_edit.place(x=</span><span class="s4">300</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">350</span><span class="s1">)</span>
+        <span class="s1">btn_edit.bind(</span><span class="s3">'&lt;Button-1&gt;'</span><span class="s0">, lambda </span><span class="s1">event: self.view.update_record(self.entry_drivername.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.entry_fio.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.entry_passdata.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.entry_car.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.entry_trailer.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.entry_driver_phone.get()</span><span class="s0">,</span>
+                                                                          <span class="s1">self.combobox.get()))</span>
+        <span class="s1">self.btn_ok.destroy()  </span><span class="s2"># убрали кнопку &quot;ОК&quot;, потому что заменили на кнопку &quot;Редактировать&quot;</span>
+
+        <span class="s2"># Класс базы данных</span>
+
+
+<span class="s0">class </span><span class="s1">Search(tk.Toplevel):</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">super().__init__()</span>
+        <span class="s1">self.__init_search()</span>
+        <span class="s1">self.view = app</span>
+
+    <span class="s0">def </span><span class="s1">__init_search(self):</span>
+        <span class="s1">self.title(</span><span class="s3">'Поиск'</span><span class="s1">)</span>
+        <span class="s1">self.geometry(</span><span class="s3">'300x100+400+300'</span><span class="s1">)</span>
+        <span class="s1">self.resizable(</span><span class="s0">False, False</span><span class="s1">)</span>
+
+        <span class="s1">label_search = tk.Label(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Поиск'</span><span class="s1">)</span>
+        <span class="s1">label_search.place(x=</span><span class="s4">50</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">20</span><span class="s1">)</span>
+
+        <span class="s1">self.entry_search = ttk.Entry(self)</span>
+        <span class="s1">self.entry_search.place(x=</span><span class="s4">105</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">20</span><span class="s0">, </span><span class="s1">width=</span><span class="s4">150</span><span class="s1">)</span>
+
+        <span class="s1">btn_cancel = ttk.Button(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Закрыть'</span><span class="s0">, </span><span class="s1">command=self.destroy)</span>
+        <span class="s1">btn_cancel.place(x=</span><span class="s4">185</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">50</span><span class="s1">)</span>
+
+        <span class="s1">btn_search = ttk.Button(self</span><span class="s0">, </span><span class="s1">text=</span><span class="s3">'Поиск'</span><span class="s1">)</span>
+        <span class="s1">btn_search.place(x=</span><span class="s4">105</span><span class="s0">, </span><span class="s1">y=</span><span class="s4">50</span><span class="s1">)</span>
+        <span class="s1">btn_search.bind(</span><span class="s3">'&lt;Button-1&gt;'</span><span class="s0">, lambda </span><span class="s1">event: self.view.search_records(self.entry_search.get()))</span>
+        <span class="s2">#Чтобы после нажатия кнопки &quot;Поиск&quot; окно закрывалось:</span>
+        <span class="s1">btn_search.bind(</span><span class="s3">'&lt;Button-1&gt;'</span><span class="s0">, lambda </span><span class="s1">event: self.destroy()</span><span class="s0">, </span><span class="s1">add=</span><span class="s3">'+'</span><span class="s1">)</span>
+
+
+<span class="s0">class </span><span class="s1">DB:</span>
+    <span class="s0">def </span><span class="s1">__init__(self):</span>
+        <span class="s1">self.conn = sqlite3.connect(</span><span class="s3">'trucking.db'</span><span class="s1">)</span>
+        <span class="s1">self.c = self.conn.cursor()</span>
+        <span class="s1">self.c.execute(</span>
+            <span class="s3">'''CREATE TABLE IF NOT EXISTS carriers (id integer primary key, DriverName text, FIO_Driver text,  
+            PassportData text, Car text, Trailer text, Driver_Phone text, Available text)'''</span><span class="s1">)</span>
+        <span class="s1">self.conn.commit()</span>
+
+    <span class="s0">def </span><span class="s1">insert_data(self</span><span class="s0">, </span><span class="s1">drivername</span><span class="s0">, </span><span class="s1">fio</span><span class="s0">, </span><span class="s1">passdata</span><span class="s0">, </span><span class="s1">car</span><span class="s0">, </span><span class="s1">trailer</span><span class="s0">, </span><span class="s1">driver_phone</span><span class="s0">, </span><span class="s1">available):</span>
+        <span class="s1">self.c.execute(</span>
+            <span class="s3">'''INSERT INTO carriers(DriverName, FIO_Driver, PassportData, Car, Trailer, Driver_Phone, Available)  
+            VALUES (?, ?, ?, ?, ?, ?, ?)'''</span><span class="s0">,</span>
+            <span class="s1">(drivername</span><span class="s0">, </span><span class="s1">fio</span><span class="s0">, </span><span class="s1">passdata</span><span class="s0">, </span><span class="s1">car</span><span class="s0">, </span><span class="s1">trailer</span><span class="s0">, </span><span class="s1">driver_phone</span><span class="s0">, </span><span class="s1">available))</span>
+        <span class="s1">self.conn.commit()</span>
+
+
+<span class="s0">if </span><span class="s1">__name__ == </span><span class="s3">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">root = tk.Tk()</span>
+    <span class="s2"># Для того чтобы обращаться к функицям класса db из класса main. Необходимо создать экземпляр класса db:</span>
+    <span class="s1">db = DB()</span>
+    <span class="s1">app = Main(root)</span>
+    <span class="s1">app.pack()</span>
+    <span class="s1">root.title(</span><span class="s3">&quot;Перевозчики&quot;</span><span class="s1">)</span>
+    <span class="s1">root.geometry(</span><span class="s3">&quot;1650x450+300+200&quot;</span><span class="s1">)</span>
+    <span class="s1">root.resizable(</span><span class="s0">False, False</span><span class="s1">)</span>
+    <span class="s1">root.mainloop()</span>
+</pre>
+</body>
+</html>
